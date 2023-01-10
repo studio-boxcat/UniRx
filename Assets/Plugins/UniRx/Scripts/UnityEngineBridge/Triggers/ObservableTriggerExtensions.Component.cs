@@ -340,12 +340,6 @@ namespace UniRx.Triggers
             return GetOrAddComponent<ObservableDeselectTrigger>(component.gameObject).OnDeselectAsObservable();
         }
 
-        public static IObservable<AxisEventData> OnMoveAsObservable(this UIBehaviour component)
-        {
-            if (component == null || component.gameObject == null) return Observable.Empty<AxisEventData>();
-            return GetOrAddComponent<ObservableMoveTrigger>(component.gameObject).OnMoveAsObservable();
-        }
-
         public static IObservable<PointerEventData> OnPointerDownAsObservable(this UIBehaviour component)
         {
             if (component == null || component.gameObject == null) return Observable.Empty<PointerEventData>();

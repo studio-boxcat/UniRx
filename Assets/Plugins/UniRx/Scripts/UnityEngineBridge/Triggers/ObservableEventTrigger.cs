@@ -8,7 +8,7 @@ using UnityEngine.EventSystems;
 namespace UniRx.Triggers
 {
     [DisallowMultipleComponent]
-    public class ObservableEventTrigger : ObservableTriggerBase, IEventSystemHandler, IPointerEnterHandler, IPointerExitHandler, IPointerDownHandler, IPointerUpHandler, IPointerClickHandler, IBeginDragHandler, IInitializePotentialDragHandler, IDragHandler, IEndDragHandler, IDropHandler, IScrollHandler, IUpdateSelectedHandler, ISelectHandler, IDeselectHandler, IMoveHandler, ISubmitHandler, ICancelHandler
+    public class ObservableEventTrigger : ObservableTriggerBase, IEventSystemHandler, IPointerEnterHandler, IPointerExitHandler, IPointerDownHandler, IPointerUpHandler, IPointerClickHandler, IBeginDragHandler, IInitializePotentialDragHandler, IDragHandler, IEndDragHandler, IDropHandler, IScrollHandler, IUpdateSelectedHandler, ISelectHandler, IDeselectHandler, ISubmitHandler, ICancelHandler
     {
         #region IDeselectHandler
 
@@ -22,22 +22,6 @@ namespace UniRx.Triggers
         public IObservable<BaseEventData> OnDeselectAsObservable()
         {
             return onDeselect ?? (onDeselect = new Subject<BaseEventData>());
-        }
-
-        #endregion
-
-        #region IMoveHandler
-
-        Subject<AxisEventData> onMove;
-
-        void IMoveHandler.OnMove(AxisEventData eventData)
-        {
-            if (onMove != null) onMove.OnNext(eventData);
-        }
-
-        public IObservable<AxisEventData> OnMoveAsObservable()
-        {
-            return onMove ?? (onMove = new Subject<AxisEventData>());
         }
 
         #endregion
@@ -287,10 +271,6 @@ namespace UniRx.Triggers
             if (onDeselect != null)
             {
                 onDeselect.OnCompleted();
-            }
-            if (onMove != null)
-            {
-                onMove.OnCompleted();
             }
             if (onPointerDown != null)
             {
