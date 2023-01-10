@@ -52,6 +52,7 @@ namespace UniRx.Triggers
 
         #region ObservableCollisionTrigger
 
+        /*
         /// <summary>OnCollisionEnter is called when this collider/rigidbody has begun touching another rigidbody/collider.</summary>
         public static IObservable<Collision> OnCollisionEnterAsObservable(this GameObject gameObject)
         {
@@ -73,6 +74,7 @@ namespace UniRx.Triggers
             if (gameObject == null) return Observable.Empty<Collision>();
             return GetOrAddComponent<ObservableCollisionTrigger>(gameObject).OnCollisionStayAsObservable();
         }
+        */
 
         #endregion
 
@@ -213,6 +215,7 @@ namespace UniRx.Triggers
 
         #region ObservableTriggerTrigger
 
+        /*
         /// <summary>OnTriggerEnter is called when the Collider other enters the trigger.</summary>
         public static IObservable<Collider> OnTriggerEnterAsObservable(this GameObject gameObject)
         {
@@ -234,6 +237,7 @@ namespace UniRx.Triggers
             if (gameObject == null) return Observable.Empty<Collider>();
             return GetOrAddComponent<ObservableTriggerTrigger>(gameObject).OnTriggerStayAsObservable();
         }
+        */
 
         #endregion
 
