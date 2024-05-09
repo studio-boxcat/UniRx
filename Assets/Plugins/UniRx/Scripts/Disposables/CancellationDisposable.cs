@@ -13,7 +13,7 @@ namespace UniRx
     /// <summary>
     /// Represents a disposable resource that has an associated <seealso cref="T:System.Threading.CancellationToken"/> that will be set to the cancellation requested state upon disposal.
     /// </summary>
-    public sealed class CancellationDisposable : ICancelable
+    public sealed class CancellationDisposable : IDisposable
     {
         private readonly CancellationTokenSource _cts;
 

@@ -58,18 +58,6 @@ namespace UniRx
         }
 
         /// <summary>
-        /// Creates a new group of disposable resources that are disposed together.
-        /// </summary>
-        /// <param name="disposables">Disposable resources to add to the group.</param>
-        /// <returns>Group of disposable resources that are disposed together.</returns>
-        public static ICancelable Create(params IDisposable[] disposables)
-        {
-            if (disposables == null) throw new ArgumentNullException("disposables");
-
-            return new NAry(disposables);
-        }
-
-        /// <summary>
         /// Creates a new group of disposable resources that are disposed together. Array is not copied, it's unsafe but optimized.
         /// </summary>
         /// <param name="disposables">Disposable resources to add to the group.</param>

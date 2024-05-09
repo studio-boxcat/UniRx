@@ -829,24 +829,6 @@ namespace UniRx
 #endif
 
         /// <summary>Convert to awaitable IEnumerator.</summary>
-        public static IEnumerator ToAwaitableEnumerator<T>(this IObservable<T> source, CancellationToken cancel = default(CancellationToken))
-        {
-            return ToAwaitableEnumerator<T>(source, Stubs<T>.Ignore, Stubs.Throw, cancel);
-        }
-
-        /// <summary>Convert to awaitable IEnumerator.</summary>
-        public static IEnumerator ToAwaitableEnumerator<T>(this IObservable<T> source, Action<T> onResult, CancellationToken cancel = default(CancellationToken))
-        {
-            return ToAwaitableEnumerator<T>(source, onResult, Stubs.Throw, cancel);
-        }
-
-        /// <summary>Convert to awaitable IEnumerator.</summary>
-        public static IEnumerator ToAwaitableEnumerator<T>(this IObservable<T> source, Action<Exception> onError, CancellationToken cancel = default(CancellationToken))
-        {
-            return ToAwaitableEnumerator<T>(source, Stubs<T>.Ignore, onError, cancel);
-        }
-
-        /// <summary>Convert to awaitable IEnumerator.</summary>
         public static IEnumerator ToAwaitableEnumerator<T>(this IObservable<T> source, Action<T> onResult, Action<Exception> onError, CancellationToken cancel = default(CancellationToken))
         {
             var enumerator = new ObservableYieldInstruction<T>(source, false, cancel);

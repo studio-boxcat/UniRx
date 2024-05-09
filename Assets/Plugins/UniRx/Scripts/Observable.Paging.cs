@@ -90,25 +90,6 @@ namespace UniRx
 
         // first, last, single
 
-        public static IObservable<T> Last<T>(this IObservable<T> source)
-        {
-            return new LastObservable<T>(source, false);
-        }
-        public static IObservable<T> Last<T>(this IObservable<T> source, Func<T, bool> predicate)
-        {
-            return new LastObservable<T>(source, predicate, false);
-        }
-
-        public static IObservable<T> LastOrDefault<T>(this IObservable<T> source)
-        {
-            return new LastObservable<T>(source, true);
-        }
-
-        public static IObservable<T> LastOrDefault<T>(this IObservable<T> source, Func<T, bool> predicate)
-        {
-            return new LastObservable<T>(source, predicate, true);
-        }
-
         public static IObservable<T> First<T>(this IObservable<T> source)
         {
             return new FirstObservable<T>(source, false);

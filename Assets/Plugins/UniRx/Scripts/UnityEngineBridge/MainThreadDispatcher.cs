@@ -188,30 +188,7 @@ namespace UniRx
         /// <summary>ThreadSafe StartCoroutine.</summary>
         public static void SendStartCoroutine(IEnumerator routine)
         {
-            if (mainThreadToken != null)
-            {
-                StartCoroutine(routine);
-            }
-            else
-            {
-#if UNITY_EDITOR
-                // call from other thread
-                if (!ScenePlaybackDetector.IsPlaying) { EditorThreadDispatcher.Instance.PseudoStartCoroutine(routine); return; }
-#endif
-
-                var dispatcher = Instance;
-                if (!isQuitting && !object.ReferenceEquals(dispatcher, null))
-                {
-                    dispatcher.queueWorker.Enqueue(_ =>
-                    {
-                        var dispacher2 = Instance;
-                        if (dispacher2 != null)
-                        {
-                            (dispacher2 as MonoBehaviour).StartCoroutine(routine);
-                        }
-                    }, null);
-                }
-            }
+            StartCoroutine(routine);
         }
 
         public static void StartUpdateMicroCoroutine(IEnumerator routine)
@@ -266,9 +243,6 @@ namespace UniRx
         static MainThreadDispatcher instance;
         static bool initialized;
         static bool isQuitting = false;
-
-        [ThreadStatic]
-        static object mainThreadToken;
 
         static MainThreadDispatcher Instance
         {
@@ -325,7 +299,6 @@ namespace UniRx
             if (instance == null)
             {
                 instance = this;
-                mainThreadToken = new object();
                 initialized = true;
 
                 updateMicroCoroutine = new MicroCoroutine(ex => unhandledExceptionCallback(ex));

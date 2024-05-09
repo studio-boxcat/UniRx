@@ -14,22 +14,6 @@ namespace UniRx
         }
 
         /// <summary>
-        /// Non-Terminating Observable. It's no returns, never finish.
-        /// </summary>
-        public static IObservable<T> Never<T>()
-        {
-            return ImmutableNeverObservable<T>.Instance;
-        }
-
-        /// <summary>
-        /// Non-Terminating Observable. It's no returns, never finish. witness is for type inference.
-        /// </summary>
-        public static IObservable<T> Never<T>(T witness)
-        {
-            return ImmutableNeverObservable<T>.Instance;
-        }
-
-        /// <summary>
         /// Return single sequence Immediately, optimized for Unit(no allocate memory).
         /// </summary>
         public static IObservable<Unit> Return(Unit value)
