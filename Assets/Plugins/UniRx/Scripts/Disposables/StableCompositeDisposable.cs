@@ -7,7 +7,7 @@ namespace UniRx
     /// <summary>
     /// Represents a group of disposable resources that are disposed together.
     /// </summary>
-    public abstract class StableCompositeDisposable : ICancelable
+    public abstract class StableCompositeDisposable : IDisposable
     {
         /// <summary>
         /// Creates a new group containing two disposable resources that are disposed together.
@@ -15,7 +15,7 @@ namespace UniRx
         /// <param name="disposable1">The first disposable resoruce to add to the group.</param>
         /// <param name="disposable2">The second disposable resoruce to add to the group.</param>
         /// <returns>Group of disposable resources that are disposed together.</returns>
-        public static ICancelable Create(IDisposable disposable1, IDisposable disposable2)
+        public static IDisposable Create(IDisposable disposable1, IDisposable disposable2)
         {
             if (disposable1 == null) throw new ArgumentNullException("disposable1");
             if (disposable2 == null) throw new ArgumentNullException("disposable2");
@@ -30,7 +30,7 @@ namespace UniRx
         /// <param name="disposable2">The second disposable resoruce to add to the group.</param>
         /// <param name="disposable3">The third disposable resoruce to add to the group.</param>
         /// <returns>Group of disposable resources that are disposed together.</returns>
-        public static ICancelable Create(IDisposable disposable1, IDisposable disposable2, IDisposable disposable3)
+        public static IDisposable Create(IDisposable disposable1, IDisposable disposable2, IDisposable disposable3)
         {
             if (disposable1 == null) throw new ArgumentNullException("disposable1");
             if (disposable2 == null) throw new ArgumentNullException("disposable2");
@@ -47,7 +47,7 @@ namespace UniRx
         /// <param name="disposable3">The three disposable resoruce to add to the group.</param>
         /// <param name="disposable4">The four disposable resoruce to add to the group.</param>
         /// <returns>Group of disposable resources that are disposed together.</returns>
-        public static ICancelable Create(IDisposable disposable1, IDisposable disposable2, IDisposable disposable3, IDisposable disposable4)
+        public static IDisposable Create(IDisposable disposable1, IDisposable disposable2, IDisposable disposable3, IDisposable disposable4)
         {
             if (disposable1 == null) throw new ArgumentNullException("disposable1");
             if (disposable2 == null) throw new ArgumentNullException("disposable2");
@@ -62,7 +62,7 @@ namespace UniRx
         /// </summary>
         /// <param name="disposables">Disposable resources to add to the group.</param>
         /// <returns>Group of disposable resources that are disposed together.</returns>
-        public static ICancelable CreateUnsafe(IDisposable[] disposables)
+        public static IDisposable CreateUnsafe(IDisposable[] disposables)
         {
             return new NAryUnsafe(disposables);
         }
@@ -72,7 +72,7 @@ namespace UniRx
         /// </summary>
         /// <param name="disposables">Disposable resources to add to the group.</param>
         /// <returns>Group of disposable resources that are disposed together.</returns>
-        public static ICancelable Create(IEnumerable<IDisposable> disposables)
+        public static IDisposable Create(IEnumerable<IDisposable> disposables)
         {
             if (disposables == null) throw new ArgumentNullException("disposables");
 
