@@ -1,5 +1,4 @@
 ﻿using System;
-using UniRx.Operators;
 
 namespace UniRx.Operators
 {
@@ -9,7 +8,6 @@ namespace UniRx.Operators
         readonly T defaultValue;
 
         public DefaultIfEmptyObservable(IObservable<T> source, T defaultValue)
-            : base(source.IsRequiredSubscribeOnCurrentThread())
         {
             this.source = source;
             this.defaultValue = defaultValue;

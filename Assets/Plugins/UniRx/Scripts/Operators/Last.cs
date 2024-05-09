@@ -9,14 +9,12 @@ namespace UniRx.Operators
         readonly Func<T, bool> predicate;
 
         public LastObservable(IObservable<T> source, bool useDefault)
-            : base(source.IsRequiredSubscribeOnCurrentThread())
         {
             this.source = source;
             this.useDefault = useDefault;
         }
 
         public LastObservable(IObservable<T> source, Func<T, bool> predicate, bool useDefault)
-            : base(source.IsRequiredSubscribeOnCurrentThread())
         {
             this.source = source;
             this.predicate = predicate;

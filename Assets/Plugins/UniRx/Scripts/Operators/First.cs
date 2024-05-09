@@ -10,14 +10,12 @@ namespace UniRx.Operators
         readonly Func<T, bool> predicate;
 
         public FirstObservable(IObservable<T> source, bool useDefault)
-            : base(source.IsRequiredSubscribeOnCurrentThread())
         {
             this.source = source;
             this.useDefault = useDefault;
         }
 
         public FirstObservable(IObservable<T> source, Func<T, bool> predicate, bool useDefault)
-            : base(source.IsRequiredSubscribeOnCurrentThread())
         {
             this.source = source;
             this.predicate = predicate;

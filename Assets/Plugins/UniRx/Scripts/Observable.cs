@@ -1,7 +1,5 @@
 ﻿using System;
-using System.Collections;
 using System.Collections.Generic;
-using System.Threading;
 using UniRx.InternalUtil;
 using UniRx.Operators;
 
@@ -15,8 +13,6 @@ namespace UniRx
 
     public static partial class Observable
     {
-        static readonly TimeSpan InfiniteTimeSpan = new TimeSpan(0, 0, 0, 0, -1); // from .NET 4.5
-
         public static IObservable<TR> Select<T, TR>(this IObservable<T> source, Func<T, TR> selector)
         {
             // sometimes cause "which no ahead of time (AOT) code was generated." on IL2CPP...
@@ -136,66 +132,6 @@ namespace UniRx
             return new ToListObservable<T>(source);
         }
 
-        public static IObservable<T> Do<T>(this IObservable<T> source, IObserver<T> observer)
-        {
-            return new DoObserverObservable<T>(source, observer);
-        }
-
-        public static IObservable<T> Do<T>(this IObservable<T> source, Action<T> onNext)
-        {
-            return new DoObservable<T>(source, onNext, Stubs.Throw, Stubs.Nop);
-        }
-
-        public static IObservable<T> Do<T>(this IObservable<T> source, Action<T> onNext, Action<Exception> onError)
-        {
-            return new DoObservable<T>(source, onNext, onError, Stubs.Nop);
-        }
-
-        public static IObservable<T> Do<T>(this IObservable<T> source, Action<T> onNext, Action onCompleted)
-        {
-            return new DoObservable<T>(source, onNext, Stubs.Throw, onCompleted);
-        }
-
-        public static IObservable<T> Do<T>(this IObservable<T> source, Action<T> onNext, Action<Exception> onError, Action onCompleted)
-        {
-            return new DoObservable<T>(source, onNext, onError, onCompleted);
-        }
-
-        public static IObservable<T> DoOnError<T>(this IObservable<T> source, Action<Exception> onError)
-        {
-            return new DoOnErrorObservable<T>(source, onError);
-        }
-
-        public static IObservable<T> DoOnCompleted<T>(this IObservable<T> source, Action onCompleted)
-        {
-            return new DoOnCompletedObservable<T>(source, onCompleted);
-        }
-
-        public static IObservable<T> DoOnTerminate<T>(this IObservable<T> source, Action onTerminate)
-        {
-            return new DoOnTerminateObservable<T>(source, onTerminate);
-        }
-
-        public static IObservable<T> DoOnSubscribe<T>(this IObservable<T> source, Action onSubscribe)
-        {
-            return new DoOnSubscribeObservable<T>(source, onSubscribe);
-        }
-
-        public static IObservable<T> DoOnCancel<T>(this IObservable<T> source, Action onCancel)
-        {
-            return new DoOnCancelObservable<T>(source, onCancel);
-        }
-
-        public static IObservable<Notification<T>> Materialize<T>(this IObservable<T> source)
-        {
-            return new MaterializeObservable<T>(source);
-        }
-
-        public static IObservable<T> Dematerialize<T>(this IObservable<Notification<T>> source)
-        {
-            return new DematerializeObservable<T>(source);
-        }
-
         public static IObservable<T> DefaultIfEmpty<T>(this IObservable<T> source)
         {
             return new DefaultIfEmptyObservable<T>(source, default(T));
@@ -272,21 +208,6 @@ namespace UniRx
             if (source == null) throw new ArgumentNullException("source");
 
             return new DistinctUntilChangedObservable<T, TKey>(source, keySelector, comparer);
-        }
-
-        public static IObservable<T> IgnoreElements<T>(this IObservable<T> source)
-        {
-            return new IgnoreElementsObservable<T>(source);
-        }
-
-        public static IObservable<Unit> ForEachAsync<T>(this IObservable<T> source, Action<T> onNext)
-        {
-            return new ForEachAsyncObservable<T>(source, onNext);
-        }
-
-        public static IObservable<Unit> ForEachAsync<T>(this IObservable<T> source, Action<T, int> onNext)
-        {
-            return new ForEachAsyncObservable<T>(source, onNext);
         }
     }
 }

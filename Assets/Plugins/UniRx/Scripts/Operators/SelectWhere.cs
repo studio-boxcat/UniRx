@@ -11,7 +11,6 @@ namespace UniRx.Operators
         readonly Func<TR, bool> predicate;
 
         public SelectWhereObservable(IObservable<T> source, Func<T, TR> selector, Func<TR, bool> predicate)
-            : base(source.IsRequiredSubscribeOnCurrentThread())
         {
             this.source = source;
             this.selector = selector;

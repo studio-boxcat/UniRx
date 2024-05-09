@@ -158,11 +158,6 @@ namespace UniRx
             if (isDisposed) throw new ObjectDisposedException("");
         }
 
-        public bool IsRequiredSubscribeOnCurrentThread()
-        {
-            return false;
-        }
-
         class Subscription : IDisposable
         {
             readonly object gate = new object();

@@ -8,7 +8,6 @@ namespace UniRx.Operators
         readonly Func<TSource, IObservable<TResult>> selector;
 
         public ContinueWithObservable(IObservable<TSource> source, Func<TSource, IObservable<TResult>> selector)
-            : base(source.IsRequiredSubscribeOnCurrentThread())
         {
             this.source = source;
             this.selector = selector;

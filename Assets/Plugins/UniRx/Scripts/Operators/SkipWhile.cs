@@ -9,14 +9,12 @@ namespace UniRx.Operators
         readonly Func<T, int, bool> predicateWithIndex;
 
         public SkipWhileObservable(IObservable<T> source, Func<T, bool> predicate)
-            : base(source.IsRequiredSubscribeOnCurrentThread())
         {
             this.source = source;
             this.predicate = predicate;
         }
 
         public SkipWhileObservable(IObservable<T> source, Func<T, int, bool> predicateWithIndex)
-            : base(source.IsRequiredSubscribeOnCurrentThread())
         {
             this.source = source;
             this.predicateWithIndex = predicateWithIndex;

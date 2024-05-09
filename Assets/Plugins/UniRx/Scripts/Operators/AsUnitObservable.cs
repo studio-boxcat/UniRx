@@ -7,7 +7,6 @@ namespace UniRx.Operators
         readonly IObservable<T> source;
 
         public AsUnitObservableObservable(IObservable<T> source)
-            : base(source.IsRequiredSubscribeOnCurrentThread())
         {
             this.source = source;
         }

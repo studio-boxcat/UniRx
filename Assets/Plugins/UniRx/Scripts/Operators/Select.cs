@@ -15,14 +15,12 @@ namespace UniRx.Operators
         readonly Func<T, int, TR> selectorWithIndex;
 
         public SelectObservable(IObservable<T> source, Func<T, TR> selector)
-            : base(source.IsRequiredSubscribeOnCurrentThread())
         {
             this.source = source;
             this.selector = selector;
         }
 
         public SelectObservable(IObservable<T> source, Func<T, int, TR> selector)
-            : base(source.IsRequiredSubscribeOnCurrentThread())
         {
             this.source = source;
             this.selectorWithIndex = selector;

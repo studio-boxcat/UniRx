@@ -4,9 +4,7 @@
 
 using System;
 using System.Collections;
-using System.Collections.Generic;
 using System.Reflection;
-using System.Threading;
 using UniRx.InternalUtil;
 using UnityEngine;
 
@@ -65,35 +63,6 @@ namespace UniRx
             EditorThreadDispatcher()
             {
                 UnityEditor.EditorApplication.update += Update;
-            }
-
-            public void Enqueue(Action<object> action, object state)
-            {
-                editorQueueWorker.Enqueue(action, state);
-            }
-
-            public void UnsafeInvoke(Action action)
-            {
-                try
-                {
-                    action();
-                }
-                catch (Exception ex)
-                {
-                    Debug.LogException(ex);
-                }
-            }
-
-            public void UnsafeInvoke<T>(Action<T> action, T state)
-            {
-                try
-                {
-                    action(state);
-                }
-                catch (Exception ex)
-                {
-                    Debug.LogException(ex);
-                }
             }
 
             public void PseudoStartCoroutine(IEnumerator routine)
@@ -216,91 +185,6 @@ namespace UniRx
 
 #endif
 
-        /// <summary>Dispatch Asyncrhonous action.</summary>
-        public static void Post(Action<object> action, object state)
-        {
-#if UNITY_EDITOR
-            if (!ScenePlaybackDetector.IsPlaying) { EditorThreadDispatcher.Instance.Enqueue(action, state); return; }
-
-#endif
-
-            var dispatcher = Instance;
-            if (!isQuitting && !object.ReferenceEquals(dispatcher, null))
-            {
-                dispatcher.queueWorker.Enqueue(action, state);
-            }
-        }
-
-        /// <summary>Dispatch Synchronous action if possible.</summary>
-        public static void Send(Action<object> action, object state)
-        {
-#if UNITY_EDITOR
-            if (!ScenePlaybackDetector.IsPlaying) { EditorThreadDispatcher.Instance.Enqueue(action, state); return; }
-#endif
-
-            if (mainThreadToken != null)
-            {
-                try
-                {
-                    action(state);
-                }
-                catch (Exception ex)
-                {
-                    var dispatcher = MainThreadDispatcher.Instance;
-                    if (dispatcher != null)
-                    {
-                        dispatcher.unhandledExceptionCallback(ex);
-                    }
-                }
-            }
-            else
-            {
-                Post(action, state);
-            }
-        }
-
-        /// <summary>Run Synchronous action.</summary>
-        public static void UnsafeSend(Action action)
-        {
-#if UNITY_EDITOR
-            if (!ScenePlaybackDetector.IsPlaying) { EditorThreadDispatcher.Instance.UnsafeInvoke(action); return; }
-#endif
-
-            try
-            {
-                action();
-            }
-            catch (Exception ex)
-            {
-                var dispatcher = MainThreadDispatcher.Instance;
-                if (dispatcher != null)
-                {
-                    dispatcher.unhandledExceptionCallback(ex);
-                }
-            }
-        }
-
-        /// <summary>Run Synchronous action.</summary>
-        public static void UnsafeSend<T>(Action<T> action, T state)
-        {
-#if UNITY_EDITOR
-            if (!ScenePlaybackDetector.IsPlaying) { EditorThreadDispatcher.Instance.UnsafeInvoke(action, state); return; }
-#endif
-
-            try
-            {
-                action(state);
-            }
-            catch (Exception ex)
-            {
-                var dispatcher = MainThreadDispatcher.Instance;
-                if (dispatcher != null)
-                {
-                    dispatcher.unhandledExceptionCallback(ex);
-                }
-            }
-        }
-
         /// <summary>ThreadSafe StartCoroutine.</summary>
         public static void SendStartCoroutine(IEnumerator routine)
         {
@@ -343,19 +227,6 @@ namespace UniRx
             }
         }
 
-        public static void StartFixedUpdateMicroCoroutine(IEnumerator routine)
-        {
-#if UNITY_EDITOR
-            if (!ScenePlaybackDetector.IsPlaying) { EditorThreadDispatcher.Instance.PseudoStartCoroutine(routine); return; }
-#endif
-
-            var dispatcher = Instance;
-            if (dispatcher != null)
-            {
-                dispatcher.fixedUpdateMicroCoroutine.AddCoroutine(routine);
-            }
-        }
-
         public static void StartEndOfFrameMicroCoroutine(IEnumerator routine)
         {
 #if UNITY_EDITOR
@@ -386,46 +257,15 @@ namespace UniRx
             }
         }
 
-        public static void RegisterUnhandledExceptionCallback(Action<Exception> exceptionCallback)
-        {
-            if (exceptionCallback == null)
-            {
-                // do nothing
-                Instance.unhandledExceptionCallback = Stubs<Exception>.Ignore;
-            }
-            else
-            {
-                Instance.unhandledExceptionCallback = exceptionCallback;
-            }
-        }
-
         ThreadSafeQueueWorker queueWorker = new ThreadSafeQueueWorker();
         Action<Exception> unhandledExceptionCallback = ex => Debug.LogException(ex); // default
 
         MicroCoroutine updateMicroCoroutine = null;
-        MicroCoroutine fixedUpdateMicroCoroutine = null;
         MicroCoroutine endOfFrameMicroCoroutine = null;
 
         static MainThreadDispatcher instance;
         static bool initialized;
         static bool isQuitting = false;
-
-        public static string InstanceName
-        {
-            get
-            {
-                if (instance == null)
-                {
-                    throw new NullReferenceException("MainThreadDispatcher is not initialized.");
-                }
-                return instance.name;
-            }
-        }
-
-        public static bool IsInitialized
-        {
-            get { return initialized && instance != null; }
-        }
 
         [ThreadStatic]
         static object mainThreadToken;
@@ -480,14 +320,6 @@ namespace UniRx
             }
         }
 
-        public static bool IsInMainThread
-        {
-            get
-            {
-                return (mainThreadToken != null);
-            }
-        }
-
         void Awake()
         {
             if (instance == null)
@@ -497,11 +329,9 @@ namespace UniRx
                 initialized = true;
 
                 updateMicroCoroutine = new MicroCoroutine(ex => unhandledExceptionCallback(ex));
-                fixedUpdateMicroCoroutine = new MicroCoroutine(ex => unhandledExceptionCallback(ex));
                 endOfFrameMicroCoroutine = new MicroCoroutine(ex => unhandledExceptionCallback(ex));
 
                 StartCoroutine(RunUpdateMicroCoroutine());
-                StartCoroutine(RunFixedUpdateMicroCoroutine());
                 StartCoroutine(RunEndOfFrameMicroCoroutine());
 
                 DontDestroyOnLoad(gameObject);
@@ -535,15 +365,6 @@ namespace UniRx
             {
                 yield return null;
                 updateMicroCoroutine.Run();
-            }
-        }
-
-        IEnumerator RunFixedUpdateMicroCoroutine()
-        {
-            while (true)
-            {
-                yield return YieldInstructionCache.WaitForFixedUpdate;
-                fixedUpdateMicroCoroutine.Run();
             }
         }
 
@@ -592,19 +413,6 @@ namespace UniRx
             {
                 instance = GameObject.FindObjectOfType<MainThreadDispatcher>();
                 initialized = instance != null;
-
-                /*
-                // Although `this` still refers to a gameObject, it won't be found.
-                var foundDispatcher = GameObject.FindObjectOfType<MainThreadDispatcher>();
-
-                if (foundDispatcher != null)
-                {
-                    // select another game object
-                    Debug.Log("new instance: " + foundDispatcher.name);
-                    instance = foundDispatcher;
-                    initialized = true;
-                }
-                */
             }
         }
 

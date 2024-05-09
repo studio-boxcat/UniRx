@@ -240,11 +240,6 @@ namespace UniRx
         {
             return (value == null) ? "(null)" : value.ToString();
         }
-
-        public bool IsRequiredSubscribeOnCurrentThread()
-        {
-            return false;
-        }
     }
 
     /// <summary>
@@ -464,11 +459,6 @@ namespace UniRx
         {
             return (latestValue == null) ? "(null)" : latestValue.ToString();
         }
-
-        public bool IsRequiredSubscribeOnCurrentThread()
-        {
-            return false;
-        }
     }
 
     /// <summary>
@@ -570,41 +560,6 @@ namespace UniRx
         public static IObservable<T> SkipLatestValueOnSubscribe<T>(this IReadOnlyReactiveProperty<T> source)
         {
             return source.HasValue ? source.Skip(1) : source;
-        }
-
-        // for multiple toggle or etc..
-
-        /// <summary>
-        /// Lastest values of each sequence are all true.
-        /// </summary>
-        public static IObservable<bool> CombineLatestValuesAreAllTrue(this IEnumerable<IObservable<bool>> sources)
-        {
-            return sources.CombineLatest().Select(xs =>
-            {
-                foreach (var item in xs)
-                {
-                    if (item == false)
-                        return false;
-                }
-                return true;
-            });
-        }
-
-
-        /// <summary>
-        /// Lastest values of each sequence are all false.
-        /// </summary>
-        public static IObservable<bool> CombineLatestValuesAreAllFalse(this IEnumerable<IObservable<bool>> sources)
-        {
-            return sources.CombineLatest().Select(xs =>
-            {
-                foreach (var item in xs)
-                {
-                    if (item == true)
-                        return false;
-                }
-                return true;
-            });
         }
     }
 }

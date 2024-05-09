@@ -8,7 +8,6 @@ namespace UniRx.Operators
         readonly Action finallyAction;
 
         public FinallyObservable(IObservable<T> source, Action finallyAction)
-            : base(source.IsRequiredSubscribeOnCurrentThread())
         {
             this.source = source;
             this.finallyAction = finallyAction;

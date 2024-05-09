@@ -8,7 +8,6 @@ namespace UniRx.Operators
         readonly IObservable<TOther> other;
 
         public TakeUntilObservable(IObservable<T> source, IObservable<TOther> other)
-            : base(source.IsRequiredSubscribeOnCurrentThread() || other.IsRequiredSubscribeOnCurrentThread())
         {
             this.source = source;
             this.other = other;

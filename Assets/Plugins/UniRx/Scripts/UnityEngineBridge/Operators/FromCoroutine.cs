@@ -9,7 +9,6 @@ namespace UniRx.Operators
         readonly Func<IObserver<T>, CancellationToken, IEnumerator> coroutine;
 
         public FromCoroutineObservable(Func<IObserver<T>, CancellationToken, IEnumerator> coroutine)
-            : base(false)
         {
             this.coroutine = coroutine;
         }
@@ -70,7 +69,6 @@ namespace UniRx.Operators
         readonly FrameCountType frameCountType;
 
         public FromMicroCoroutineObservable(Func<IObserver<T>, CancellationToken, IEnumerator> coroutine, FrameCountType frameCountType)
-            : base(false)
         {
             this.coroutine = coroutine;
             this.frameCountType = frameCountType;
@@ -92,9 +90,6 @@ namespace UniRx.Operators
             {
                 case FrameCountType.Update:
                     MainThreadDispatcher.StartUpdateMicroCoroutine(coroutine(microCoroutineObserver, token));
-                    break;
-                case FrameCountType.FixedUpdate:
-                    MainThreadDispatcher.StartFixedUpdateMicroCoroutine(coroutine(microCoroutineObserver, token));
                     break;
                 case FrameCountType.EndOfFrame:
                     MainThreadDispatcher.StartEndOfFrameMicroCoroutine(coroutine(microCoroutineObserver, token));

@@ -12,28 +12,24 @@ namespace UniRx.Operators
         readonly Func<TSource, int, IEnumerable<TResult>> selectorEnumerableWithIndex;
 
         public SelectManyObservable(IObservable<TSource> source, Func<TSource, IObservable<TResult>> selector)
-            : base(source.IsRequiredSubscribeOnCurrentThread())
         {
             this.source = source;
             this.selector = selector;
         }
 
         public SelectManyObservable(IObservable<TSource> source, Func<TSource, int, IObservable<TResult>> selector)
-            : base(source.IsRequiredSubscribeOnCurrentThread())
         {
             this.source = source;
             this.selectorWithIndex = selector;
         }
 
         public SelectManyObservable(IObservable<TSource> source, Func<TSource, IEnumerable<TResult>> selector)
-            : base(source.IsRequiredSubscribeOnCurrentThread())
         {
             this.source = source;
             this.selectorEnumerable = selector;
         }
 
         public SelectManyObservable(IObservable<TSource> source, Func<TSource, int, IEnumerable<TResult>> selector)
-            : base(source.IsRequiredSubscribeOnCurrentThread())
         {
             this.source = source;
             this.selectorEnumerableWithIndex = selector;
@@ -448,7 +444,6 @@ namespace UniRx.Operators
         readonly Func<TSource, int, TCollection, int, TResult> resultSelectorWithIndex;
 
         public SelectManyObservable(IObservable<TSource> source, Func<TSource, IObservable<TCollection>> collectionSelector, Func<TSource, TCollection, TResult> resultSelector)
-            : base(source.IsRequiredSubscribeOnCurrentThread())
         {
             this.source = source;
             this.collectionSelector = collectionSelector;
@@ -456,7 +451,6 @@ namespace UniRx.Operators
         }
 
         public SelectManyObservable(IObservable<TSource> source, Func<TSource, int, IObservable<TCollection>> collectionSelector, Func<TSource, int, TCollection, int, TResult> resultSelector)
-            : base(source.IsRequiredSubscribeOnCurrentThread())
         {
             this.source = source;
             this.collectionSelectorWithIndex = collectionSelector;
@@ -464,7 +458,6 @@ namespace UniRx.Operators
         }
 
         public SelectManyObservable(IObservable<TSource> source, Func<TSource, IEnumerable<TCollection>> collectionSelector, Func<TSource, TCollection, TResult> resultSelector)
-            : base(source.IsRequiredSubscribeOnCurrentThread())
         {
             this.source = source;
             this.collectionSelectorEnumerable = collectionSelector;
@@ -472,7 +465,6 @@ namespace UniRx.Operators
         }
 
         public SelectManyObservable(IObservable<TSource> source, Func<TSource, int, IEnumerable<TCollection>> collectionSelector, Func<TSource, int, TCollection, int, TResult> resultSelector)
-            : base(source.IsRequiredSubscribeOnCurrentThread())
         {
             this.source = source;
             this.collectionSelectorEnumerableWithIndex = collectionSelector;

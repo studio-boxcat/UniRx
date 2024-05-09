@@ -10,44 +10,12 @@ using UniRx.Triggers;
 using UnityEngine;
 using System.Threading;
 
-#if !UniRxLibrary
-using SchedulerUnity = UniRx.Scheduler;
-#endif
-
 namespace UniRx
 {
     public enum FrameCountType
     {
         Update,
-        FixedUpdate,
         EndOfFrame,
-    }
-
-    public enum MainThreadDispatchType
-    {
-        /// <summary>yield return null</summary>
-        Update,
-        FixedUpdate,
-        EndOfFrame,
-        GameObjectUpdate,
-        LateUpdate,
-    }
-
-    public static class FrameCountTypeExtensions
-    {
-        public static YieldInstruction GetYieldInstruction(this FrameCountType frameCountType)
-        {
-            switch (frameCountType)
-            {
-                case FrameCountType.FixedUpdate:
-                    return YieldInstructionCache.WaitForFixedUpdate;
-                case FrameCountType.EndOfFrame:
-                    return YieldInstructionCache.WaitForEndOfFrame;
-                case FrameCountType.Update:
-                default:
-                    return null;
-            }
-        }
     }
 
     internal interface ICustomYieldInstructionErrorHandler
@@ -680,11 +648,6 @@ namespace UniRx
             return FromMicroCoroutine<long>((observer, cancellationToken) => EveryCycleCore(observer, cancellationToken), FrameCountType.Update);
         }
 
-        public static IObservable<long> EveryFixedUpdate()
-        {
-            return FromMicroCoroutine<long>((observer, cancellationToken) => EveryCycleCore(observer, cancellationToken), FrameCountType.FixedUpdate);
-        }
-
         public static IObservable<long> EveryEndOfFrame()
         {
             return FromMicroCoroutine<long>((observer, cancellationToken) => EveryCycleCore(observer, cancellationToken), FrameCountType.EndOfFrame);
@@ -819,48 +782,6 @@ namespace UniRx
                 yield return null;
             }
         }
-
-        public static IObservable<T> DelayFrame<T>(this IObservable<T> source, int frameCount, FrameCountType frameCountType = FrameCountType.Update)
-        {
-            if (frameCount < 0) throw new ArgumentOutOfRangeException("frameCount");
-            return new UniRx.Operators.DelayFrameObservable<T>(source, frameCount, frameCountType);
-        }
-
-        public static IObservable<T> Sample<T, T2>(this IObservable<T> source, IObservable<T2> sampler)
-        {
-            return new UniRx.Operators.SampleObservable<T, T2>(source, sampler);
-        }
-
-        public static IObservable<T> SampleFrame<T>(this IObservable<T> source, int frameCount, FrameCountType frameCountType = FrameCountType.Update)
-        {
-            if (frameCount < 0) throw new ArgumentOutOfRangeException("frameCount");
-            return new UniRx.Operators.SampleFrameObservable<T>(source, frameCount, frameCountType);
-        }
-
-        public static IObservable<TSource> ThrottleFrame<TSource>(this IObservable<TSource> source, int frameCount, FrameCountType frameCountType = FrameCountType.Update)
-        {
-            if (frameCount < 0) throw new ArgumentOutOfRangeException("frameCount");
-            return new UniRx.Operators.ThrottleFrameObservable<TSource>(source, frameCount, frameCountType);
-        }
-
-        public static IObservable<TSource> ThrottleFirstFrame<TSource>(this IObservable<TSource> source, int frameCount, FrameCountType frameCountType = FrameCountType.Update)
-        {
-            if (frameCount < 0) throw new ArgumentOutOfRangeException("frameCount");
-            return new UniRx.Operators.ThrottleFirstFrameObservable<TSource>(source, frameCount, frameCountType);
-        }
-
-        public static IObservable<T> TimeoutFrame<T>(this IObservable<T> source, int frameCount, FrameCountType frameCountType = FrameCountType.Update)
-        {
-            if (frameCount < 0) throw new ArgumentOutOfRangeException("frameCount");
-            return new UniRx.Operators.TimeoutFrameObservable<T>(source, frameCount, frameCountType);
-        }
-
-        public static IObservable<T> DelayFrameSubscription<T>(this IObservable<T> source, int frameCount, FrameCountType frameCountType = FrameCountType.Update)
-        {
-            if (frameCount < 0) throw new ArgumentOutOfRangeException("frameCount");
-            return new UniRx.Operators.DelayFrameSubscriptionObservable<T>(source, frameCount, frameCountType);
-        }
-
         #endregion
 
 #if SupportCustomYieldInstruction
@@ -975,64 +896,6 @@ namespace UniRx
             return MainThreadDispatcher.StartCoroutine(source.ToAwaitableEnumerator(onResult, onError, cancel));
         }
 
-        public static IObservable<T> ObserveOnMainThread<T>(this IObservable<T> source)
-        {
-            return source.ObserveOn(SchedulerUnity.MainThread);
-        }
-
-        public static IObservable<T> ObserveOnMainThread<T>(this IObservable<T> source, MainThreadDispatchType dispatchType)
-        {
-            switch (dispatchType)
-            {
-                case MainThreadDispatchType.Update:
-                    return source.ObserveOnMainThread(); // faster path
-
-                // others, bit slower
-
-                case MainThreadDispatchType.FixedUpdate:
-                    return source.SelectMany(_ => EveryFixedUpdate().Take(1), (x, _) => x);
-                case MainThreadDispatchType.EndOfFrame:
-                    return source.SelectMany(_ => EveryEndOfFrame().Take(1), (x, _) => x);
-                case MainThreadDispatchType.GameObjectUpdate:
-                    return source.SelectMany(_ => MainThreadDispatcher.UpdateAsObservable().Take(1), (x, _) => x);
-                case MainThreadDispatchType.LateUpdate:
-                    return source.SelectMany(_ => MainThreadDispatcher.LateUpdateAsObservable().Take(1), (x, _) => x);
-                default:
-                    throw new ArgumentException("type is invalid");
-            }
-        }
-
-        public static IObservable<T> SubscribeOnMainThread<T>(this IObservable<T> source)
-        {
-            return source.SubscribeOn(SchedulerUnity.MainThread);
-        }
-
-        // I can't avoid Unity 5.3's uNET weaver bug, pending...
-
-        //public static IObservable<T> SubscribeOnMainThread<T>(this IObservable<T> source, MainThreadDispatchType dispatchType)
-        //{
-        //    switch (dispatchType)
-        //    {
-        //        case MainThreadDispatchType.Update:
-        //            return source.SubscribeOnMainThread(); // faster path
-
-        //        // others, bit slower
-
-        //        case MainThreadDispatchType.FixedUpdate:
-        //            return new UniRx.Operators.SubscribeOnMainThreadObservable<T>(source, EveryFixedUpdate().Take(1));
-        //        case MainThreadDispatchType.EndOfFrame:
-        //            return new UniRx.Operators.SubscribeOnMainThreadObservable<T>(source, EveryEndOfFrame().Take(1));
-        //        case MainThreadDispatchType.GameObjectUpdate:
-        //            return new UniRx.Operators.SubscribeOnMainThreadObservable<T>(source, MainThreadDispatcher.UpdateAsObservable().Select(_ => 0L).Take(1));
-        //        case MainThreadDispatchType.LateUpdate:
-        //            return new UniRx.Operators.SubscribeOnMainThreadObservable<T>(source, MainThreadDispatcher.LateUpdateAsObservable().Select(_ => 0L).Take(1));
-        //        case MainThreadDispatchType.AfterUpdate:
-        //            return new UniRx.Operators.SubscribeOnMainThreadObservable<T>(source, EveryAfterUpdate().Take(1));
-        //        default:
-        //            throw new ArgumentException("type is invalid");
-        //    }
-        //}
-
         public static IObservable<bool> EveryApplicationPause()
         {
             return MainThreadDispatcher.OnApplicationPauseAsObservable().AsObservable();
@@ -1068,103 +931,5 @@ namespace UniRx
         {
             return source.TakeUntil(target.OnDisableAsObservable());
         }
-
-        public static IObservable<T> RepeatUntilDestroy<T>(this IObservable<T> source, GameObject target)
-        {
-            return RepeatUntilCore(RepeatInfinite(source), target.OnDestroyAsObservable(), target);
-        }
-
-        public static IObservable<T> RepeatUntilDestroy<T>(this IObservable<T> source, Component target)
-        {
-            return RepeatUntilCore(RepeatInfinite(source), target.OnDestroyAsObservable(), (target != null) ? target.gameObject : null);
-        }
-
-        public static IObservable<T> RepeatUntilDisable<T>(this IObservable<T> source, GameObject target)
-        {
-            return RepeatUntilCore(RepeatInfinite(source), target.OnDisableAsObservable(), target);
-        }
-
-        public static IObservable<T> RepeatUntilDisable<T>(this IObservable<T> source, Component target)
-        {
-            return RepeatUntilCore(RepeatInfinite(source), target.OnDisableAsObservable(), (target != null) ? target.gameObject : null);
-        }
-
-        static IObservable<T> RepeatUntilCore<T>(this IEnumerable<IObservable<T>> sources, IObservable<Unit> trigger, GameObject lifeTimeChecker)
-        {
-            return new UniRx.Operators.RepeatUntilObservable<T>(sources, trigger, lifeTimeChecker);
-        }
-
-        public static IObservable<UniRx.FrameInterval<T>> FrameInterval<T>(this IObservable<T> source)
-        {
-            return new UniRx.Operators.FrameIntervalObservable<T>(source);
-        }
-
-        public static IObservable<UniRx.TimeInterval<T>> FrameTimeInterval<T>(this IObservable<T> source, bool ignoreTimeScale = false)
-        {
-            return new UniRx.Operators.FrameTimeIntervalObservable<T>(source, ignoreTimeScale);
-        }
-
-        /// <summary>
-        /// Buffer elements in during target frame counts. Default raise same frame of end(frameCount = 0, frameCountType = EndOfFrame).
-        /// </summary>
-        public static IObservable<IList<T>> BatchFrame<T>(this IObservable<T> source)
-        {
-            // if use default argument, comiler errors ambiguous(Unity's limitation)
-            return BatchFrame<T>(source, 0, FrameCountType.EndOfFrame);
-        }
-
-        /// <summary>
-        /// Buffer elements in during target frame counts.
-        /// </summary>
-        public static IObservable<IList<T>> BatchFrame<T>(this IObservable<T> source, int frameCount, FrameCountType frameCountType)
-        {
-            if (frameCount < 0) throw new ArgumentException("frameCount must be >= 0, frameCount:" + frameCount);
-            return new UniRx.Operators.BatchFrameObservable<T>(source, frameCount, frameCountType);
-        }
-
-        /// <summary>
-        /// Wait command in during target frame counts. Default raise same frame of end(frameCount = 0, frameCountType = EndOfFrame).
-        /// </summary>
-        public static IObservable<Unit> BatchFrame(this IObservable<Unit> source)
-        {
-            return BatchFrame(source, 0, FrameCountType.EndOfFrame);
-        }
-
-        /// <summary>
-        /// Wait command in during target frame counts.
-        /// </summary>
-        public static IObservable<Unit> BatchFrame(this IObservable<Unit> source, int frameCount, FrameCountType frameCountType)
-        {
-            if (frameCount < 0) throw new ArgumentException("frameCount must be >= 0, frameCount:" + frameCount);
-            return new UniRx.Operators.BatchFrameObservable(source, frameCount, frameCountType);
-        }
-
-#if UniRxLibrary
-
-        static IEnumerable<IObservable<T>> RepeatInfinite<T>(IObservable<T> source)
-        {
-            while (true)
-            {
-                yield return source;
-            }
-        }
-
-        internal static class Stubs
-        {
-            public static readonly Action Nop = () => { };
-            public static readonly Action<Exception> Throw = ex => { ex.Throw(); };
-
-            // Stubs<T>.Ignore can't avoid iOS AOT problem.
-            public static void Ignore<T>(T t)
-            {
-            }
-
-            // marker for CatchIgnore and Catch avoid iOS AOT problem.
-            public static IObservable<TSource> CatchIgnore<TSource>(Exception ex)
-            {
-                return Observable.Empty<TSource>();
-            }
-        }
-#endif
     }
 }

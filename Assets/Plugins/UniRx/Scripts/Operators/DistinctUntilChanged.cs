@@ -9,7 +9,6 @@ namespace UniRx.Operators
         readonly IEqualityComparer<T> comparer;
 
         public DistinctUntilChangedObservable(IObservable<T> source, IEqualityComparer<T> comparer)
-            : base(source.IsRequiredSubscribeOnCurrentThread())
         {
             this.source = source;
             this.comparer = comparer;
@@ -89,7 +88,6 @@ namespace UniRx.Operators
         readonly Func<T, TKey> keySelector;
 
         public DistinctUntilChangedObservable(IObservable<T> source, Func<T, TKey> keySelector, IEqualityComparer<TKey> comparer)
-            : base(source.IsRequiredSubscribeOnCurrentThread())
         {
             this.source = source;
             this.comparer = comparer;
