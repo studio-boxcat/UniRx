@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections;
-using System.Collections.Generic;
 using UniRx.Triggers;
 using UnityEngine;
 
@@ -65,26 +64,6 @@ namespace UniRx
             }
 
             return AddTo(disposable, gameObjectComponent.gameObject);
-        }
-
-        /// <summary>
-        /// <para>Add disposable(self) to CompositeDisposable(or other ICollection) and Dispose self on target gameObject has been destroyed.</para>
-        /// <para>Return value is self disposable.</para>
-        /// </summary>
-        public static T AddTo<T>(this T disposable, ICollection<IDisposable> container, GameObject gameObject)
-            where T : IDisposable
-        {
-            return disposable.AddTo(container).AddTo(gameObject);
-        }
-
-        /// <summary>
-        /// <para>Add disposable(self) to CompositeDisposable(or other ICollection) and Dispose self on target gameObject has been destroyed.</para>
-        /// <para>Return value is self disposable.</para>
-        /// </summary>
-        public static T AddTo<T>(this T disposable, ICollection<IDisposable> container, Component gameObjectComponent)
-            where T : IDisposable
-        {
-            return disposable.AddTo(container).AddTo(gameObjectComponent);
         }
     }
 }

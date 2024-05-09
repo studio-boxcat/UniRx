@@ -166,7 +166,7 @@ namespace UniRx
             RaiseOnNext(ref value);
         }
 
-        public IDisposable Subscribe(IObserver<T> observer)
+        IDisposable IObservable<T>.Subscribe(IObserver<T> observer)
         {
             if (isDisposed)
             {
