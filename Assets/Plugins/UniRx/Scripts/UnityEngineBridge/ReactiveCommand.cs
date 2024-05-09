@@ -1,10 +1,6 @@
 ﻿using System;
-using System.Threading;
+using Cysharp.Threading.Tasks;
 
-#if CSHARP_7_OR_LATER || (UNITY_2018_3_OR_NEWER && (NET_STANDARD_2_0 || NET_4_6))
-using System.Threading.Tasks;
-using UniRx.InternalUtil;
-#endif
 namespace UniRx
 {
     public interface IReactiveCommand<T> : IObservable<T>
@@ -143,18 +139,9 @@ namespace UniRx
 
 #if CSHARP_7_OR_LATER || (UNITY_2018_3_OR_NEWER && (NET_STANDARD_2_0 || NET_4_6))
 
-        static readonly Action<object> Callback = CancelCallback;
-
-        static void CancelCallback(object state)
+        public static UniTask<T> WaitUntilExecuteAsync<T>(this IReactiveCommand<T> source)
         {
-            var tuple = (Tuple<ICancellableTaskCompletionSource, IDisposable>)state;
-            tuple.Item2.Dispose();
-            tuple.Item1.TrySetCanceled();
-        }
-
-        public static Task<T> WaitUntilExecuteAsync<T>(this IReactiveCommand<T> source, CancellationToken cancellationToken = default(CancellationToken))
-        {
-            var tcs = new CancellableTaskCompletionSource<T>();
+            var tcs = new UniTaskCompletionSource<T>();
 
             var disposable = new SingleAssignmentDisposable();
             disposable.Disposable = source.Subscribe(x =>
@@ -163,14 +150,12 @@ namespace UniRx
                 tcs.TrySetResult(x);
             }, ex => tcs.TrySetException(ex), () => tcs.TrySetCanceled());
 
-            cancellationToken.Register(Callback, Tuple.Create(tcs, disposable.Disposable), false);
-
             return tcs.Task;
         }
 
-        public static System.Runtime.CompilerServices.TaskAwaiter<T> GetAwaiter<T>(this IReactiveCommand<T> command)
+        public static UniTask<T>.Awaiter GetAwaiter<T>(this IReactiveCommand<T> command)
         {
-            return command.WaitUntilExecuteAsync(CancellationToken.None).GetAwaiter();
+            return command.WaitUntilExecuteAsync().GetAwaiter();
         }
 
 #endif

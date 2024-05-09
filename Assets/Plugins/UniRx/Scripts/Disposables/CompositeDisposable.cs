@@ -1,7 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-// using System.Linq; do not use LINQ
-using System.Text;
 
 namespace UniRx
 {
@@ -22,19 +20,6 @@ namespace UniRx
         public CompositeDisposable()
         {
             _disposables = new List<IDisposable>();
-        }
-
-        /// <summary>
-        /// Initializes a new instance of the <see cref="T:System.Reactive.Disposables.CompositeDisposable"/> class with the specified number of disposables.
-        /// </summary>
-        /// <param name="capacity">The number of disposables that the new CompositeDisposable can initially store.</param>
-        /// <exception cref="ArgumentOutOfRangeException"><paramref name="capacity"/> is less than zero.</exception>
-        public CompositeDisposable(int capacity)
-        {
-            if (capacity < 0)
-                throw new ArgumentOutOfRangeException("capacity");
-
-            _disposables = new List<IDisposable>(capacity);
         }
 
         /// <summary>
@@ -270,14 +255,6 @@ namespace UniRx
         System.Collections.IEnumerator System.Collections.IEnumerable.GetEnumerator()
         {
             return GetEnumerator();
-        }
-
-        /// <summary>
-        /// Gets a value that indicates whether the object is disposed.
-        /// </summary>
-        public bool IsDisposed
-        {
-            get { return _disposed; }
         }
     }
 }

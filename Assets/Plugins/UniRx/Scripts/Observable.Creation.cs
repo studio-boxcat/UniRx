@@ -20,13 +20,5 @@ namespace UniRx
         {
             return ImmutableReturnUnitObservable.Instance;
         }
-
-        /// <summary>
-        /// Same as Observable.Return(Unit.Default); but no allocate memory.
-        /// </summary>
-        public static IObservable<Unit> ReturnUnit()
-        {
-            return ImmutableReturnUnitObservable.Instance;
-        }
     }
 }

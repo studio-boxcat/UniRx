@@ -1,7 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Text;
-using UniRx.InternalUtil;
 using UniRx.Operators;
 
 namespace UniRx
@@ -45,14 +42,6 @@ namespace UniRx
             if (other == null) throw new ArgumentNullException("other");
 
             return new TakeUntilObservable<T, TOther>(source, other);
-        }
-
-        public static IObservable<T> TakeLast<T>(this IObservable<T> source, int count)
-        {
-            if (source == null) throw new ArgumentNullException("source");
-            if (count < 0) throw new ArgumentOutOfRangeException("count");
-
-            return new TakeLastObservable<T>(source, count);
         }
 
         public static IObservable<T> Skip<T>(this IObservable<T> source, int count)

@@ -62,11 +62,6 @@ namespace UniRx
             }
         }
 
-        public static IObserver<T> CreateAutoDetachObserver<T>(IObserver<T> observer, IDisposable disposable)
-        {
-            return new AutoDetachObserver<T>(observer, disposable);
-        }
-
         class AnonymousObserver<T> : IObserver<T>
         {
             readonly Action<T> onNext;
@@ -351,40 +346,6 @@ namespace UniRx
                 {
                     onCompleted(state1, state2, state3);
                 }
-            }
-        }
-
-        class AutoDetachObserver<T> : UniRx.Operators.OperatorObserverBase<T, T>
-        {
-            public AutoDetachObserver(IObserver<T> observer, IDisposable cancel)
-                : base(observer, cancel)
-            {
-
-            }
-
-            public override void OnNext(T value)
-            {
-                try
-                {
-                    base.observer.OnNext(value);
-                }
-                catch
-                {
-                    Dispose();
-                    throw;
-                }
-            }
-
-            public override void OnError(Exception error)
-            {
-                try { observer.OnError(error); }
-                finally { Dispose(); }
-            }
-
-            public override void OnCompleted()
-            {
-                try { observer.OnCompleted(); }
-                finally { Dispose(); }
             }
         }
     }

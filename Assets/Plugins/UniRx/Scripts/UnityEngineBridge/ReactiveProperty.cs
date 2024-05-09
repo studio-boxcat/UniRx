@@ -5,12 +5,10 @@
 using System;
 using System.Collections.Generic;
 using System.Threading;
+using Cysharp.Threading.Tasks;
 using UniRx.InternalUtil;
 #if !UniRxLibrary
 using UnityEngine;
-#endif
-#if CSHARP_7_OR_LATER || (UNITY_2018_3_OR_NEWER && (NET_STANDARD_2_0 || NET_4_6))
-using System.Threading.Tasks;
 #endif
 
 namespace UniRx
@@ -75,7 +73,7 @@ namespace UniRx
     /// Lightweight property broker.
     /// </summary>
     [Serializable]
-    public class ReactiveProperty<T> : IReactiveProperty<T>, IDisposable, IOptimizedObservable<T>, IObserverLinkedList<T>
+    public class ReactiveProperty<T> : IReactiveProperty<T>, IDisposable, IObserverLinkedList<T>
     {
 #if !UniRxLibrary
         static readonly IEqualityComparer<T> defaultEqualityComparer = UnityEqualityComparer.GetDefault<T>();
@@ -245,7 +243,7 @@ namespace UniRx
     /// <summary>
     /// Lightweight property broker.
     /// </summary>
-    public class ReadOnlyReactiveProperty<T> : IReadOnlyReactiveProperty<T>, IDisposable, IOptimizedObservable<T>, IObserverLinkedList<T>, IObserver<T>
+    public class ReadOnlyReactiveProperty<T> : IReadOnlyReactiveProperty<T>, IDisposable, IObserverLinkedList<T>, IObserver<T>
     {
 #if !UniRxLibrary
         static readonly IEqualityComparer<T> defaultEqualityComparer = UnityEqualityComparer.GetDefault<T>();
@@ -483,18 +481,9 @@ namespace UniRx
 
 #if CSHARP_7_OR_LATER || (UNITY_2018_3_OR_NEWER && (NET_STANDARD_2_0 || NET_4_6))
 
-        static readonly Action<object> Callback = CancelCallback;
-
-        static void CancelCallback(object state)
+        public static UniTask<T> WaitUntilValueChangedAsync<T>(this IReadOnlyReactiveProperty<T> source)
         {
-            var tuple = (Tuple<ICancellableTaskCompletionSource, IDisposable>)state;
-            tuple.Item2.Dispose();
-            tuple.Item1.TrySetCanceled();
-        }
-
-        public static Task<T> WaitUntilValueChangedAsync<T>(this IReadOnlyReactiveProperty<T> source, CancellationToken cancellationToken = default(CancellationToken))
-        {
-            var tcs = new CancellableTaskCompletionSource<T>();
+            var tcs = new UniTaskCompletionSource<T>();
 
             var disposable = new SingleAssignmentDisposable();
             if (source.HasValue)
@@ -524,42 +513,19 @@ namespace UniRx
                 }, ex => tcs.TrySetException(ex), () => tcs.TrySetCanceled());
             }
 
-            cancellationToken.Register(Callback, Tuple.Create(tcs, disposable.Disposable), false);
-
             return tcs.Task;
         }
 
-        public static System.Runtime.CompilerServices.TaskAwaiter<T> GetAwaiter<T>(this IReadOnlyReactiveProperty<T> source)
+        public static UniTask<T>.Awaiter GetAwaiter<T>(this IReadOnlyReactiveProperty<T> source)
         {
-            return source.WaitUntilValueChangedAsync(CancellationToken.None).GetAwaiter();
+            return source.WaitUntilValueChangedAsync().GetAwaiter();
         }
 
 #endif
 
-        /// <summary>
-        /// Create ReadOnlyReactiveProperty with distinctUntilChanged: false.
-        /// </summary>
-        public static ReadOnlyReactiveProperty<T> ToSequentialReadOnlyReactiveProperty<T>(this IObservable<T> source)
-        {
-            return new ReadOnlyReactiveProperty<T>(source, distinctUntilChanged: false);
-        }
-
         public static ReadOnlyReactiveProperty<T> ToReadOnlyReactiveProperty<T>(this IObservable<T> source, T initialValue)
         {
             return new ReadOnlyReactiveProperty<T>(source, initialValue);
-        }
-
-        /// <summary>
-        /// Create ReadOnlyReactiveProperty with distinctUntilChanged: false.
-        /// </summary>
-        public static ReadOnlyReactiveProperty<T> ToSequentialReadOnlyReactiveProperty<T>(this IObservable<T> source, T initialValue)
-        {
-            return new ReadOnlyReactiveProperty<T>(source, initialValue, distinctUntilChanged: false);
-        }
-
-        public static IObservable<T> SkipLatestValueOnSubscribe<T>(this IReadOnlyReactiveProperty<T> source)
-        {
-            return source.HasValue ? source.Skip(1) : source;
         }
     }
 }

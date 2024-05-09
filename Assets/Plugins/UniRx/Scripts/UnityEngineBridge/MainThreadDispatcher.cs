@@ -4,7 +4,6 @@
 
 using System;
 using System.Collections;
-using System.Reflection;
 using UniRx.InternalUtil;
 using UnityEngine;
 
@@ -85,92 +84,16 @@ namespace UniRx
                         goto ENQUEUE;
                     }
 
-                    var type = current.GetType();
-// #if UNITY_2018_3_OR_NEWER
-// #pragma warning disable CS0618
-// #endif
-//                     if (type == typeof(WWW))
-//                     {
-//                         var www = (WWW)current;
-//                         editorQueueWorker.Enqueue(_ => ConsumeEnumerator(UnwrapWaitWWW(www, routine)), null);
-//                         return;
-//                     }
-// #if UNITY_2018_3_OR_NEWER
-// #pragma warning restore CS0618
-// #endif
-                    if (type == typeof(AsyncOperation))
-                    {
-                        var asyncOperation = (AsyncOperation)current;
-                        editorQueueWorker.Enqueue(_ => ConsumeEnumerator(UnwrapWaitAsyncOperation(asyncOperation, routine)), null);
-                        return;
-                    }
-                    else if (type == typeof(WaitForSeconds))
-                    {
-                        var waitForSeconds = (WaitForSeconds)current;
-                        var accessor = typeof(WaitForSeconds).GetField("m_Seconds", BindingFlags.Instance | BindingFlags.GetField | BindingFlags.NonPublic);
-                        var second = (float)accessor.GetValue(waitForSeconds);
-                        editorQueueWorker.Enqueue(_ => ConsumeEnumerator(UnwrapWaitForSeconds(second, routine)), null);
-                        return;
-                    }
-                    else if (type == typeof(Coroutine))
-                    {
-                        Debug.Log("Can't wait coroutine on UnityEditor");
-                        goto ENQUEUE;
-                    }
-#if SupportCustomYieldInstruction
-                    else if (current is IEnumerator)
+                    if (current is IEnumerator)
                     {
                         var enumerator = (IEnumerator)current;
                         editorQueueWorker.Enqueue(_ => ConsumeEnumerator(UnwrapEnumerator(enumerator, routine)), null);
                         return;
                     }
-#endif
 
                     ENQUEUE:
                     editorQueueWorker.Enqueue(_ => ConsumeEnumerator(routine), null); // next update
                 }
-            }
-
-/*
-#if UNITY_2018_3_OR_NEWER
-#pragma warning disable CS0618
-#endif
-            IEnumerator UnwrapWaitWWW(WWW www, IEnumerator continuation)
-            {
-                while (!www.isDone)
-                {
-                    yield return null;
-                }
-                ConsumeEnumerator(continuation);
-            }
-#if UNITY_2018_3_OR_NEWER
-#pragma warning restore CS0618
-#endif
-*/
-
-            IEnumerator UnwrapWaitAsyncOperation(AsyncOperation asyncOperation, IEnumerator continuation)
-            {
-                while (!asyncOperation.isDone)
-                {
-                    yield return null;
-                }
-                ConsumeEnumerator(continuation);
-            }
-
-            IEnumerator UnwrapWaitForSeconds(float second, IEnumerator continuation)
-            {
-                var startTime = DateTimeOffset.UtcNow;
-                while (true)
-                {
-                    yield return null;
-
-                    var elapsed = (DateTimeOffset.UtcNow - startTime).TotalSeconds;
-                    if (elapsed >= second)
-                    {
-                        break;
-                    }
-                };
-                ConsumeEnumerator(continuation);
             }
 
             IEnumerator UnwrapEnumerator(IEnumerator enumerator, IEnumerator continuation)
@@ -184,12 +107,6 @@ namespace UniRx
         }
 
 #endif
-
-        /// <summary>ThreadSafe StartCoroutine.</summary>
-        public static void SendStartCoroutine(IEnumerator routine)
-        {
-            StartCoroutine(routine);
-        }
 
         public static void StartUpdateMicroCoroutine(IEnumerator routine)
         {

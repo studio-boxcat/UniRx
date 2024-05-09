@@ -1,11 +1,9 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Text;
 using UniRx.InternalUtil;
 
 namespace UniRx
 {
-    public sealed class Subject<T> : ISubject<T>, IDisposable, IOptimizedObservable<T>
+    public sealed class Subject<T> : IObserver<T>, IObservable<T>, IDisposable
     {
         object observerLock = new object();
 
@@ -13,14 +11,6 @@ namespace UniRx
         bool isDisposed;
         Exception lastError;
         IObserver<T> outObserver = EmptyObserver<T>.Instance;
-
-        public bool HasObservers
-        {
-            get
-            {
-                return !(outObserver is EmptyObserver<T>) && !isStopped && !isDisposed;
-            }
-        }
 
         public void OnCompleted()
         {
