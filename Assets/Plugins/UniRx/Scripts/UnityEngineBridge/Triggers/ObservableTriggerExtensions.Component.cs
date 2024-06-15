@@ -268,12 +268,6 @@ namespace UniRx.Triggers
             return GetOrAddComponent<ObservablePointerClickTrigger>(component.gameObject).OnPointerClickAsObservable();
         }
 
-        public static IObservable<BaseEventData> OnSubmitAsObservable(this UIBehaviour component)
-        {
-            if (component == null || component.gameObject == null) return Observable.Empty<BaseEventData>();
-            return GetOrAddComponent<ObservableSubmitTrigger>(component.gameObject).OnSubmitAsObservable();
-        }
-
         public static IObservable<PointerEventData> OnDragAsObservable(this UIBehaviour component)
         {
             if (component == null || component.gameObject == null) return Observable.Empty<PointerEventData>();
@@ -310,12 +304,6 @@ namespace UniRx.Triggers
             return GetOrAddComponent<ObservableInitializePotentialDragTrigger>(component.gameObject).OnInitializePotentialDragAsObservable();
         }
 
-        public static IObservable<BaseEventData> OnCancelAsObservable(this UIBehaviour component)
-        {
-            if (component == null || component.gameObject == null) return Observable.Empty<BaseEventData>();
-            return GetOrAddComponent<ObservableCancelTrigger>(component.gameObject).OnCancelAsObservable();
-        }
-
         public static IObservable<PointerEventData> OnScrollAsObservable(this UIBehaviour component)
         {
             if (component == null || component.gameObject == null) return Observable.Empty<PointerEventData>();
@@ -325,27 +313,5 @@ namespace UniRx.Triggers
         #endregion
 
 #endif
-
-        #region ObservableParticleTrigger
-
-        /// <summary>OnParticleCollision is called when a particle hits a collider.</summary>
-        public static IObservable<GameObject> OnParticleCollisionAsObservable(this Component component)
-        {
-            if (component == null || component.gameObject == null) return Observable.Empty<GameObject>();
-            return GetOrAddComponent<ObservableParticleTrigger>(component.gameObject).OnParticleCollisionAsObservable();
-        }
-
-#if UNITY_5_4_OR_NEWER
-
-        /// <summary>OnParticleTrigger is called when any particles in a particle system meet the conditions in the trigger module.</summary>
-        public static IObservable<Unit> OnParticleTriggerAsObservable(this Component component)
-        {
-            if (component == null || component.gameObject == null) return Observable.Empty<Unit>();
-            return GetOrAddComponent<ObservableParticleTrigger>(component.gameObject).OnParticleTriggerAsObservable();
-        }
-
-#endif
-
-        #endregion
     }
 }
