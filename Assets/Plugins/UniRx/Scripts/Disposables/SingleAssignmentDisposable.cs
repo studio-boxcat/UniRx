@@ -13,8 +13,6 @@ namespace UniRx
         IDisposable current;
         bool disposed;
 
-        public bool IsDisposed { get { lock (gate) { return disposed; } } }
-
         public IDisposable Disposable
         {
             get

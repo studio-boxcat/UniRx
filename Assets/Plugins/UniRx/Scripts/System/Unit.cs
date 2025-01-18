@@ -2,7 +2,6 @@
 
 namespace UniRx
 {
-    [Serializable]
     public struct Unit : IEquatable<Unit>
     {
         public static readonly Unit Default = new();

@@ -6,7 +6,6 @@ namespace UniRx.Operators
     {
         readonly IObservable<T> source;
         readonly Func<T, bool> predicate;
-        readonly Func<T, int, bool> predicateWithIndex;
 
         public WhereObservable(IObservable<T> source, Func<T, bool> predicate)
         {
@@ -14,38 +13,11 @@ namespace UniRx.Operators
             this.predicate = predicate;
         }
 
-        public WhereObservable(IObservable<T> source, Func<T, int, bool> predicateWithIndex)
-        {
-            this.source = source;
-            this.predicateWithIndex = predicateWithIndex;
-        }
-
-        // Optimize for .Where().Where()
-
-        public IObservable<T> CombinePredicate(Func<T, bool> combinePredicate)
-        {
-            if (this.predicate != null)
-            {
-                return new WhereObservable<T>(source, x => this.predicate(x) && combinePredicate(x));
-            }
-            else
-            {
-                return new WhereObservable<T>(this, combinePredicate);
-            }
-        }
-
         // Optimize for .Where().Select()
 
         protected override IDisposable SubscribeCore(IObserver<T> observer, IDisposable cancel)
         {
-            if (predicate != null)
-            {
-                return source.Subscribe(new Where(this, observer, cancel));
-            }
-            else
-            {
-                return source.Subscribe(new Where_(this, observer, cancel));
-            }
+            return source.Subscribe(new Where(this, observer, cancel));
         }
 
         class Where : OperatorObserverBase<T, T>
@@ -64,48 +36,6 @@ namespace UniRx.Operators
                 try
                 {
                     isPassed = parent.predicate(value);
-                }
-                catch (Exception ex)
-                {
-                    try { observer.OnError(ex); } finally { Dispose(); }
-                    return;
-                }
-
-                if (isPassed)
-                {
-                    observer.OnNext(value);
-                }
-            }
-
-            public override void OnError(Exception error)
-            {
-                try { observer.OnError(error); } finally { Dispose(); }
-            }
-
-            public override void OnCompleted()
-            {
-                try { observer.OnCompleted(); } finally { Dispose(); }
-            }
-        }
-
-        class Where_ : OperatorObserverBase<T, T>
-        {
-            readonly WhereObservable<T> parent;
-            int index;
-
-            public Where_(WhereObservable<T> parent, IObserver<T> observer, IDisposable cancel)
-                : base(observer, cancel)
-            {
-                this.parent = parent;
-                this.index = 0;
-            }
-
-            public override void OnNext(T value)
-            {
-                var isPassed = false;
-                try
-                {
-                    isPassed = parent.predicateWithIndex(value, index++);
                 }
                 catch (Exception ex)
                 {
